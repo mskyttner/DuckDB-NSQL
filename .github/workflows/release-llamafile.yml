@@ -1,0 +1,47 @@
+name: Release llamafile
+
+on:
+  workflow_dispatch:
+  # support triggering by external webhook
+  repository_dispatch:
+    types: [dependency_update]
+
+jobs:
+  release-llamafile:
+    runs-on: ubuntu-latest
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v4
+    -
+      name: Free Disk Space
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: true
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: false
+        swap-storage: true
+    -
+      name: Support APE bins
+      run: |
+        sudo curl -o /usr/bin/ape https://raw.githubusercontent.com/jart/cosmopolitan/master/build/bootstrap/ape.elf
+        sudo sh -c "echo ':APE:M::MZqFpD::/usr/bin/ape:' >/proc/sys/fs/binfmt_misc/register"
+    -
+      name: Build llamafile
+      run: |
+        curl -L -o llamafile https://github.com/Mozilla-Ocho/llamafile/releases/download/0.6.1/llamafile-0.6.1
+        curl -L -o zipalign https://github.com/Mozilla-Ocho/llamafile/releases/download/0.6.1/zipalign-0.6.1
+        curl -L -o ducksql.gguf https://huggingface.co/motherduckdb/DuckDB-NSQL-7B-v0.1-GGUF/resolve/main/DuckDB-NSQL-7B-v0.1-q8_0.gguf?download=true
+        chmod +x llamafile zipalign
+
+        cp llamafile ducksql.llamafile
+        echo -e "-m\nducksql.gguf\n--host\n0.0.0.0\n..." > .args
+        zipalign -j0 ducksql.llamafile ducksql.gguf .args
+    -
+      name: Release
+      uses: fnkr/github-action-ghr@v1
+      env:
+        GHR_PATH: ducksql.llamafile
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
