@@ -42,7 +42,7 @@ jobs:
         # create llamafile
         cp llamafile ducksql.llamafile
         echo -e "-m\nducksql.gguf\n--host\n0.0.0.0\n..." > .args
-        ./zipalign -j0 ducksql.llamafile ducksql.gguf .args
+        sudo ./zipalign -j0 ducksql.llamafile ducksql.gguf .args
     -
       name: Release
       uses: fnkr/github-action-ghr@v1
