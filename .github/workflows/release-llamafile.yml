@@ -34,7 +34,9 @@ jobs:
         # get tools
         curl -L -o llamafile https://github.com/Mozilla-Ocho/llamafile/releases/download/0.6.1/llamafile-0.6.1
         curl -L -o zipalign https://github.com/Mozilla-Ocho/llamafile/releases/download/0.6.1/zipalign-0.6.1
-        chmod +x llamafile zipalign
+
+        sudo chmod +x llamafile
+        sudo chmod +x zipalign
 
         # get data
         curl -L -o ducksql.gguf https://huggingface.co/motherduckdb/DuckDB-NSQL-7B-v0.1-GGUF/resolve/main/DuckDB-NSQL-7B-v0.1-q8_0.gguf?download=true
@@ -42,6 +44,9 @@ jobs:
         # create llamafile
         cp llamafile ducksql.llamafile
         echo -e "-m\nducksql.gguf\n--host\n0.0.0.0\n..." > .args
+
+        sudo file ducksql.llamafile
+        sudo ls -lahtr ducksql.llamafile zipalign .args
         sudo ./zipalign -j0 ducksql.llamafile ducksql.gguf .args
     -
       name: Release
